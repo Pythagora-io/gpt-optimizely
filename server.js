@@ -6,6 +6,7 @@ const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const authRoutes = require("./routes/authRoutes");
 const apiRoutes = require('./routes/apiRoutes'); // Include API routes
+const abTestRoutes = require('./routes/abTestRoutes'); // Include A/B test routes
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
@@ -74,6 +75,9 @@ app.use(authRoutes);
 
 // API Routes
 app.use(apiRoutes); // Use API routes in the application
+
+// A/B Test Routes
+app.use(abTestRoutes); // Use A/B test routes in the application
 
 // Root path response
 app.get("/", (req, res) => {
