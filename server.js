@@ -4,9 +4,12 @@ const mongoose = require("mongoose");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
+const csurf = require('csurf'); // CSURF for CSRF protection
 const authRoutes = require("./routes/authRoutes");
 const apiRoutes = require('./routes/apiRoutes'); // Include API routes
 const abTestRoutes = require('./routes/abTestRoutes'); // Include A/B test routes
+const userRoutes = require('./routes/userRoutes'); // Include User routes for account and A/B test management
+const cors = require('cors');
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
@@ -19,6 +22,9 @@ const port = process.env.PORT || 3000;
 // Middleware to parse request bodies
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Setting the templating engine to EJS
 app.set("view engine", "ejs");
@@ -47,6 +53,14 @@ app.use(
     store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
   }),
 );
+
+// CSURF Middleware for CSRF protection
+app.use(csurf());
+
+app.use(function (req, res, next) {
+  res.locals.csrfToken = req.csrfToken(); // Pass the CSRF token to the views
+  next();
+});
 
 app.on("error", (error) => {
   console.error(`Server error: ${error.message}`);
@@ -78,6 +92,9 @@ app.use(apiRoutes); // Use API routes in the application
 
 // A/B Test Routes
 app.use(abTestRoutes); // Use A/B test routes in the application
+
+// User Routes for account and A/B tests management
+app.use(userRoutes); // Use User routes in the application
 
 // Root path response with authentication check
 app.get("/", (req, res) => {

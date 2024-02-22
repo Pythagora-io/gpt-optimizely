@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs') %>
+<body>
+<%- include('partials/_header.ejs') %>
+<main role="main" class="container mt-4 mb-5">
+    <h2>Edit A/B Test</h2>
+    <form action="/tests/<%= test._id %>/update" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="testStatus" value="<%= test.testStatus %>">
+        <div class="mb-3">
+            <label for="testName" class="form-label">Test Name</label>
+            <input type="text" class="form-control" id="testName" name="testName" value="<%= test.testName %>" required>
+        </div>
+        <div class="mb-3">
+            <label for="pagePaths" class="form-label">Pages on which the test will be active</label>
+            <div id="pagePaths">
+                <% test.pagePaths.forEach(function(path) { %>
+                    <input type="text" class="form-control mb-2" name="pagePaths[]" value="<%= path %>" required>
+                <% }); %>
+            </div>
+            <button type="button" class="btn btn-secondary" id="addPagePath">Add Another Page Path</button>
+        </div>
+        <div class="mb-3">
+            <label for="IDparent" class="form-label">ID field for the parent element</label>
+            <input type="text" class="form-control" id="IDparent" name="IDparent" value="<%= test.IDparent %>" required>
+        </div>
+        <div class="mb-3">
+            <label for="IDclick" class="form-label">ID field for the element on which the clicks will be tracked</label>
+            <input type="text" class="form-control" id="IDclick" name="IDclick" value="<%= test.IDclick %>" required>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="htmlContentA" class="form-label">HTML Content for Version A</label>
+                <textarea class="form-control" id="htmlContentA" name="htmlContentA" rows="3" required><%= test.htmlContentA %></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="htmlContentB" class="form-label">HTML Content for Version B</label>
+                <textarea class="form-control" id="htmlContentB" name="htmlContentB" rows="3" required><%= test.htmlContentB %></textarea>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Test</button>
+    </form>
+</main>
+<script>
+    document.getElementById('addPagePath').addEventListener('click', function() {
+        const newInput = document.createElement('input');
+        newInput.type = 'text';
+        newInput.className = 'form-control mb-2';
+        newInput.name = 'pagePaths[]';
+        document.getElementById('pagePaths').appendChild(newInput);
+        console.log("Added new page path input field");
+    });
+    window.addEventListener('error', function(event) {
+        console.error("Error occurred in editTestForm.ejs: ", event.message, event.error.stack);
+    });
+</script>
+</body>
+<%- include('partials/_footer.ejs') %>
+</html>

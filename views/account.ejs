@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs') %>
+<body>
+<%- include('partials/_header.ejs') %>
+<main role="main" class="container mt-4">
+    <h2>Your Account</h2>
+    <div class="my-4">
+        <h4>API Key</h4>
+        <pre><code><%= user.apiKey %></code></pre>
+        <h4>HTML Snippet</h4>
+        <pre><code>&lt;script src="<%= process.env.LOADER_JS_PATH %>" data-api-key="<%= user.apiKey %>"&gt;&lt;/script&gt;</code></pre>
+    </div>
+</main>
+</body>
+<%- include('partials/_footer.ejs') %>
+</html>

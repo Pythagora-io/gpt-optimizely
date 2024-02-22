@@ -1,1 +1,16 @@
 /* Placeholder for custom styles */
+
+.footer {
+  background: #f8f9fa;
+  padding: 1rem 0;
+  margin-top: 2rem;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.container {
+  min-height: calc(100% - 60px); /* Adjust 60px based on the actual height of your footer */
+}

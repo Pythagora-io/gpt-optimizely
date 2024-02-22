@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs') %>
+<body>
+<%- include('partials/_header.ejs') %>
+<main role="main" class="container mt-4">
+    <h2>A/B Tests Management</h2>
+    <a class="btn btn-primary my-3" href="/tests/new">Create New Test</a>
+    <div id="testsList">
+        <% tests.forEach(function(test) { %>
+            <div class="card my-2">
+                <div class="card-body">
+                    <h5 class="card-title"><%= test.testName %></h5>
+                    <p class="card-text">Status: <%= test.testStatus %></p>
+                    <a href="/tests/<%= test._id %>/edit" class="btn btn-secondary">Edit</a>
+                    <a href="#" class="btn <%= test.testStatus === 'Running' ? 'btn-danger' : 'btn-success' %> toggle-test-status" data-testid="<%= test._id %>" data-status="<%= test.testStatus %>"><%= test.testStatus === 'Running' ? 'Stop' : 'Start' %></a>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+    <input type="hidden" id="csrfToken" value="<%= csrfToken %>">
+</main>
+<script src="/js/abTests.js"></script>
+</body>
+<%- include('partials/_footer.ejs') %>
+</html>

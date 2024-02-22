@@ -18,7 +18,7 @@ router.post('/tests/create', isAuthenticated, async (req, res) => {
       createdBy: req.session.userId
     });
     console.log(`A/B test created: ${newTest.testName}`);
-    res.redirect('/dashboard');
+    res.redirect('/tests/management');
   } catch (error) {
     console.error('Error creating A/B test:', error.message, error.stack);
     res.status(500).send('Error creating A/B test.');
@@ -31,20 +31,20 @@ router.post('/tests/:testId/toggle-status', isAuthenticated, async (req, res) =>
     const test = await AbTest.findById(req.params.testId);
     if (!test) {
       console.log('Test not found with id:', req.params.testId);
-      return res.status(404).send('Test not found.');
+      return res.status(404).json({ success: false, message: 'Test not found.' });
     }
     test.testStatus = test.testStatus === 'Running' ? 'Stopped' : 'Running';
     await test.save();
     console.log(`Test status toggled: ${test.testName} is now ${test.testStatus}`);
-    res.redirect('/dashboard');
+    res.json({ success: true, testStatus: test.testStatus });
   } catch (error) {
     console.error('Error toggling test status:', error.message, error.stack);
-    res.status(500).send('Error toggling test status.');
+    res.status(500).json({ success: false, message: 'Error toggling test status.' });
   }
 });
 
 // Updating an A/B test
-router.put('/tests/:testId/update', isAuthenticated, async (req, res) => {
+router.post('/tests/:testId/update', isAuthenticated, async (req, res) => {
   try {
     const { testId } = req.params;
     const { testName, pagePaths, IDparent, IDclick, htmlContentA, htmlContentB, testStatus } = req.body;
@@ -64,7 +64,7 @@ router.put('/tests/:testId/update', isAuthenticated, async (req, res) => {
 
     await test.save();
     console.log(`A/B test updated: ${test.testName}`);
-    res.send({ message: 'A/B test updated successfully.' });
+    res.redirect('/tests/management');
   } catch (error) {
     console.error('Error updating A/B test:', error.message, error.stack);
     res.status(500).send('Error updating A/B test.');

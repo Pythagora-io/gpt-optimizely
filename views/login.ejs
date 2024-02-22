@@ -12,6 +12,7 @@
           </div>
         <% } %>
         <form action="/auth/login" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="mb-3">
             <input type="text" name="username" placeholder="Username" required class="form-control">
           </div>
