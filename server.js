@@ -79,9 +79,14 @@ app.use(apiRoutes); // Use API routes in the application
 // A/B Test Routes
 app.use(abTestRoutes); // Use A/B test routes in the application
 
-// Root path response
+// Root path response with authentication check
 app.get("/", (req, res) => {
-  res.render("index");
+  if (req.session && req.session.userId) {
+    res.render("index");
+  } else {
+    console.log("Redirecting unauthenticated user to login page.");
+    res.redirect("/auth/login");
+  }
 });
 
 // If no routes handled the request, it's a 404
