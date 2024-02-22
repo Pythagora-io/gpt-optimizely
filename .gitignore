@@ -1,0 +1,4 @@
+node_modules/
+.gpt-pilot/
+.env
+package-lock.json
