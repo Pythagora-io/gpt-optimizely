@@ -10,8 +10,10 @@ const apiRoutes = require('./routes/apiRoutes'); // Include API routes
 const abTestRoutes = require('./routes/abTestRoutes'); // Include A/B test routes
 const userRoutes = require('./routes/userRoutes'); // Include User routes for account and A/B test management
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
-if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
+if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET || !process.env.SERVER_URL) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
   process.exit(-1);
 }
@@ -28,6 +30,18 @@ app.use(cors());
 
 // Setting the templating engine to EJS
 app.set("view engine", "ejs");
+
+// Serve loader.js dynamically
+app.get('/loader.js', (req, res) => {
+  fs.readFile(path.join(__dirname, 'public', 'loader.js'), 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error reading loader.js file:', err);
+      return res.status(500).send('Error serving loader script.');
+    }
+    const updatedData = data.replace('%%SERVER_URL%%', process.env.SERVER_URL);
+    res.type('application/javascript').send(updatedData);
+  });
+});
 
 // Serve static files
 app.use(express.static("public"));
