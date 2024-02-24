@@ -14,6 +14,7 @@
         const parentElement = document.getElementById(idParent);
         if (parentElement) {
             parentElement.innerHTML = htmlContent;
+            console.log(`GPTOptimizely Success: HTML content injected into ${idParent}.`);
         } else {
             console.error(`GPTOptimizely Error: Parent element with ID ${idParent} not found.`);
         }
@@ -40,15 +41,26 @@
                     if (!response.ok) {
                         throw new Error('Failed to send click data.');
                     }
-                    console.log('Click data sent successfully.');
+                    console.log('GPTOptimizely Success: Click data sent successfully.');
                 })
                 .catch(error => {
                     console.error('GPTOptimizely Tracking Error:', error.message, error.stack);
                 });
             });
+            console.log(`GPTOptimizely Success: Click tracking added to ${idClick}.`);
         } else {
             console.error(`GPTOptimizely Error: Clickable element with ID ${idClick} not found.`);
         }
+    }
+
+    function waitForElement(id, callback) {
+        const interval = setInterval(() => {
+            const element = document.getElementById(id);
+            if (element) {
+                clearInterval(interval);
+                callback();
+            }
+        }, 100);
     }
 
     // Fetch A/B test configuration from the server
@@ -60,13 +72,15 @@
             return response.json();
         })
         .then(data => {
-            const { idParent, idClick, htmlContent, version } = data;
-
-            // Inject the HTML content into the specified element
-            injectHtml(htmlContent, idParent);
-
-            // Track clicks on the specified element
-            trackClicks(idClick, version);
+            data.forEach((config) => {
+                const { idParent, idClick, htmlContent, version } = config;
+                waitForElement(idParent, () => {
+                    // Inject the HTML content into the specified element
+                    injectHtml(htmlContent, idParent);
+                    // Track clicks on the specified element
+                    trackClicks(idClick, version);
+                });
+            });
         })
         .catch(error => {
             console.error('GPTOptimizely Error:', error.message, error.stack);
