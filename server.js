@@ -13,6 +13,7 @@ const userRoutes = require('./routes/userRoutes');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const { redirectToLoginIfNotAuthenticated } = require('./routes/middleware/authMiddleware');
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET || !process.env.SERVER_URL) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
@@ -147,13 +148,8 @@ app.use(abTestRoutes);
 
 app.use(userRoutes);
 
-app.get("/", (req, res) => {
-  if (req.session && req.session.userId) {
-    res.render("index");
-  } else {
-    console.log("Redirecting unauthenticated user to login page.");
-    res.redirect("/auth/login");
-  }
+app.get("/", redirectToLoginIfNotAuthenticated, (req, res) => {
+  res.redirect("/tests/management");
 });
 
 app.use((req, res, next) => {

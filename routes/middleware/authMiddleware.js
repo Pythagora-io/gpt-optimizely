@@ -6,6 +6,16 @@ const isAuthenticated = (req, res, next) => {
   }
 };
 
+const redirectToLoginIfNotAuthenticated = (req, res, next) => {
+  if (!req.session || !req.session.userId) {
+    console.log("Redirecting unauthenticated user to login page.");
+    return res.redirect('/auth/login');
+  } else {
+    next(); // Proceed if authenticated
+  }
+};
+
 module.exports = {
-  isAuthenticated
+  isAuthenticated,
+  redirectToLoginIfNotAuthenticated
 };

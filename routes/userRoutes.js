@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { isAuthenticated } = require('./middleware/authMiddleware');
+const { isAuthenticated, redirectToLoginIfNotAuthenticated } = require('./middleware/authMiddleware');
 const User = require('../models/User');
 const AbTest = require('../models/AbTest');
 
-router.get('/account', isAuthenticated, async (req, res) => {
+router.get('/account', redirectToLoginIfNotAuthenticated, async (req, res) => {
     try {
         const user = await User.findById(req.session.userId);
         if (!user) {
@@ -19,7 +19,7 @@ router.get('/account', isAuthenticated, async (req, res) => {
     }
 });
 
-router.get('/tests/management', isAuthenticated, async (req, res) => {
+router.get('/tests/management', redirectToLoginIfNotAuthenticated, async (req, res) => {
     try {
         const tests = await AbTest.find({ createdBy: req.session.userId });
         console.log(`Rendering A/B tests management page for user ID: ${req.session.userId}`);
@@ -30,7 +30,7 @@ router.get('/tests/management', isAuthenticated, async (req, res) => {
     }
 });
 
-router.get('/tests/new', isAuthenticated, (req, res) => {
+router.get('/tests/new', redirectToLoginIfNotAuthenticated, (req, res) => {
     try {
         console.log("Rendering the 'Create New Test' form.");
         res.render('testForm');
@@ -40,7 +40,7 @@ router.get('/tests/new', isAuthenticated, (req, res) => {
     }
 });
 
-router.get('/tests/:testId/edit', isAuthenticated, async (req, res) => {
+router.get('/tests/:testId/edit', redirectToLoginIfNotAuthenticated, async (req, res) => {
     try {
         const test = await AbTest.findById(req.params.testId);
         if (!test) {
