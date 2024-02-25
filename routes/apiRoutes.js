@@ -1,6 +1,8 @@
 const express = require('express');
 const AbTest = require('../models/AbTest');
 const User = require('../models/User');
+const rateLimit = require('express-rate-limit');
+const { testTrackSchema } = require('../validators/testTrackValidator');
 const router = express.Router();
 
 router.get('/api/generate-snippet', async (req, res) => {
@@ -94,6 +96,48 @@ router.get('/api/tests/config', async (req, res) => {
   } catch (error) {
     console.error('Error fetching and sorting A/B test configuration:', error.message, error.stack);
     res.status(500).send('Internal server error while fetching and sorting A/B test configuration.');
+  }
+});
+
+// Define a simple rate limit rule: Allow 100 requests per hour per IP
+const trackApiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 100,
+  message: 'Too many requests from this IP, please try again after an hour'
+});
+
+// Add a new route for tracking clicks
+router.post('/api/tests/track', trackApiLimiter, async (req, res) => {
+  const validation = testTrackSchema.validate(req.body);
+  if (validation.error) {
+    console.error('Validation error:', validation.error.message);
+    return res.status(400).send('Validation error: ' + validation.error.message);
+  }
+
+  const { apiKey, version, clicked, testName, pagePath } = req.body;
+
+  try {
+    const user = await User.findOne({ apiKey });
+    if (!user) {
+      console.error(`Invalid API key: ${apiKey}`);
+      return res.status(404).send('Invalid API key.');
+    }
+
+    const filter = { createdBy: user._id, testName: testName, pagePaths: pagePath, testStatus: 'Running' };
+    const update = version === 'A' ? { $inc: { clicksA: 1 } } : { $inc: { clicksB: 1 } };
+
+    const test = await AbTest.findOneAndUpdate(filter, update, { new: true });
+
+    if (!test) {
+      console.error('A/B Test not found or not running on specified path.');
+      return res.status(404).send('A/B Test not found or not running on specified path.');
+    }
+
+    console.log(`Click for ${testName} tracked successfully.`);
+    res.status(200).send('Click tracked successfully.');
+  } catch (error) {
+    console.error('Error tracking A/B test click:', error.message, error.stack);
+    res.status(500).send('Error tracking A/B test click.');
   }
 });
 

@@ -21,7 +21,7 @@
     }
 
     // Define the function to track clicks
-    function trackClicks(idClick, version) {
+    function trackClicks(idClick, version, testName) {
         const clickableElement = document.getElementById(idClick);
         if (clickableElement) {
             clickableElement.addEventListener('click', () => {
@@ -29,12 +29,15 @@
                 fetch(`${serverUrl}/api/tests/track`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}` // Use the API key for authorization instead of CSRF token
                     },
                     body: JSON.stringify({
                         apiKey,
                         version,
-                        clicked: true
+                        clicked: true,
+                        testName: testName,
+                        pagePath: window.location.pathname
                     })
                 })
                 .then(response => {
@@ -73,12 +76,12 @@
         })
         .then(data => {
             data.forEach((config) => {
-                const { idParent, idClick, htmlContent, version } = config;
+                const { idParent, idClick, htmlContent, version, testName } = config;
                 waitForElement(idParent, () => {
                     // Inject the HTML content into the specified element
                     injectHtml(htmlContent, idParent);
                     // Track clicks on the specified element
-                    trackClicks(idClick, version);
+                    trackClicks(idClick, version, testName);
                 });
             });
         })

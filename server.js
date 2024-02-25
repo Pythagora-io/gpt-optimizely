@@ -1,14 +1,15 @@
-// Load environment variables
 require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
-const csurf = require('csurf'); // CSURF for CSRF protection
+const helmet = require('helmet');
+const csurf = require('csurf');
+const User = require('./models/User');
 const authRoutes = require("./routes/authRoutes");
-const apiRoutes = require('./routes/apiRoutes'); // Include API routes
-const abTestRoutes = require('./routes/abTestRoutes'); // Include A/B test routes
-const userRoutes = require('./routes/userRoutes'); // Include User routes for account and A/B test management
+const apiRoutes = require('./routes/apiRoutes');
+const abTestRoutes = require('./routes/abTestRoutes');
+const userRoutes = require('./routes/userRoutes');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
@@ -21,17 +22,43 @@ if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET || !process.env.SER
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware to parse request bodies
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Enable CORS for all routes
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:8081',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
 
-// Setting the templating engine to EJS
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", process.env.SERVER_URL],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'", 'wss:', 'https:', 'http:'],
+      fontSrc: ["'self'", 'https:', 'data:'],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'self'"],
+      workerSrc: ["'self'", 'blob:'],
+      childSrc: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+}));
+
+app.use('/loader.js', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+});
+
 app.set("view engine", "ejs");
 
-// Serve loader.js dynamically
 app.get('/loader.js', (req, res) => {
   fs.readFile(path.join(__dirname, 'public', 'loader.js'), 'utf8', (err, data) => {
     if (err) {
@@ -43,10 +70,8 @@ app.get('/loader.js', (req, res) => {
   });
 });
 
-// Serve static files
 app.use(express.static("public"));
 
-// Database connection
 mongoose
   .connect(process.env.DATABASE_URL)
   .then(() => {
@@ -58,21 +83,27 @@ mongoose
     process.exit(1);
   });
 
-// Session configuration with connect-mongo
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
+    cookie: { secure: false, httpOnly: true, sameSite: 'lax' }
   }),
 );
 
-// CSURF Middleware for CSRF protection
-app.use(csurf());
+app.use(function (req, res, next) {
+  if (req.path === '/api/tests/track') {
+    return next();
+  }
+  csurf()(req, res, next);
+});
 
 app.use(function (req, res, next) {
-  res.locals.csrfToken = req.csrfToken(); // Pass the CSRF token to the views
+  if (req.csrfToken) {
+    res.locals.csrfToken = req.csrfToken();
+  }
   next();
 });
 
@@ -81,10 +112,8 @@ app.on("error", (error) => {
   console.error(error.stack);
 });
 
-// Logging session creation and destruction
 app.use((req, res, next) => {
   const sess = req.session;
-  // Make session available to all views
   res.locals.session = sess;
   if (!sess.views) {
     sess.views = 1;
@@ -92,25 +121,32 @@ app.use((req, res, next) => {
   } else {
     sess.views++;
     console.log(
-      `Session accessed again at: ${new Date().toISOString()}, Views: ${sess.views}, User ID: ${sess.userId || '(unauthenticated)'}`,
+      `Session accessed again at: ${new Date().toISOString()}, Views: ${sess.views}, User ID: ${sess.userId || '(unauthenticated)'}`
     );
   }
   next();
 });
 
-// Authentication Routes
 app.use(authRoutes);
 
-// API Routes
-app.use(apiRoutes); // Use API routes in the application
+app.use('/api/tests/track', async (req, res, next) => {
+  const apiKey = req.body.apiKey;
+  if (!apiKey) {
+    return res.status(401).send('API Key is required');
+  }
+  const user = await User.findOne({ apiKey });
+  if (!user) {
+    return res.status(401).send('Invalid API Key');
+  }
+  next();
+});
 
-// A/B Test Routes
-app.use(abTestRoutes); // Use A/B test routes in the application
+app.use(apiRoutes);
 
-// User Routes for account and A/B tests management
-app.use(userRoutes); // Use User routes in the application
+app.use(abTestRoutes);
 
-// Root path response with authentication check
+app.use(userRoutes);
+
 app.get("/", (req, res) => {
   if (req.session && req.session.userId) {
     res.render("index");
@@ -120,12 +156,10 @@ app.get("/", (req, res) => {
   }
 });
 
-// If no routes handled the request, it's a 404
 app.use((req, res, next) => {
   res.status(404).send("Page not found.");
 });
 
-// Error handling
 app.use((err, req, res, next) => {
   console.error(`Unhandled application error: ${err.message}`);
   console.error(err.stack);
