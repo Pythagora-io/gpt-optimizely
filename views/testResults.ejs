@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs') %>
+<body>
+<%- include('partials/_header.ejs') %>
+<main role="main" class="container mt-4 mb-5">
+    <h2>Test Results: <%= testName %></h2>
+    <div class="my-4">
+        <canvas id="resultsChart"></canvas>
+    </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('resultsChart').getContext('2d');
+        const data = {
+            labels: ['Version A', 'Version B'],
+            datasets: [
+                {
+                    label: 'Impressions',
+                    data: [<%= impressionsA %>, <%= impressionsB %>],
+                    backgroundColor: 'rgba(0, 128, 0, 0.5)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Clicks',
+                    data: [<%= clicksA %>, <%= clicksB %>],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }
+            ]
+        };
+
+        const options = {
+            scales: {
+                x: {
+                    stacked: false,
+                },
+                y: {
+                    stacked: false,
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Test Results: <%= testName %>'
+                }
+            }
+        };
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+
+        console.log("Test results for '<%= testName %>' rendered successfully.");
+    });
+</script>
+</body>
+<%- include('partials/_footer.ejs') %>
+</html>

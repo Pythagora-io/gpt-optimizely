@@ -37,7 +37,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", process.env.SERVER_URL],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", process.env.SERVER_URL, 'https://cdn.jsdelivr.net'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
       imgSrc: ["'self'", 'data:', 'https:'],
       connectSrc: ["'self'", 'wss:', 'https:', 'http:'],
@@ -94,7 +94,7 @@ app.use(
 );
 
 app.use(function (req, res, next) {
-  if (req.path === '/api/tests/track') {
+  if (req.path === '/api/tests/track' || req.path === '/api/tests/config' || req.path === '/loader.js' || (req.path === '/api/tests/impression' && req.method === 'POST')) {
     return next();
   }
   csurf()(req, res, next);

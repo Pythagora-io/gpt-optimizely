@@ -9,12 +9,35 @@
         return;
     }
 
-    // Define the function to inject HTML content
-    function injectHtml(htmlContent, idParent) {
+    // Define the function to inject HTML content and track impressions
+    function injectHtmlAndTrackImpressions(htmlContent, idParent, version, testName) {
         const parentElement = document.getElementById(idParent);
         if (parentElement) {
             parentElement.innerHTML = htmlContent;
             console.log(`GPTOptimizely Success: HTML content injected into ${idParent}.`);
+
+            // Track the impression immediately after injecting the HTML content
+            fetch(`${serverUrl}/api/tests/impression`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    apiKey,
+                    version,
+                    testName: testName,
+                    pagePath: window.location.pathname
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to send impression data.');
+                }
+                console.log('GPTOptimizely Success: Impression data sent successfully.');
+            })
+            .catch(error => {
+                console.error('GPTOptimizely Tracking Error:', error.message, error.stack);
+            });
         } else {
             console.error(`GPTOptimizely Error: Parent element with ID ${idParent} not found.`);
         }
@@ -78,8 +101,8 @@
             data.forEach((config) => {
                 const { idParent, idClick, htmlContent, version, testName } = config;
                 waitForElement(idParent, () => {
-                    // Inject the HTML content into the specified element
-                    injectHtml(htmlContent, idParent);
+                    // Inject the HTML content and track impressions
+                    injectHtmlAndTrackImpressions(htmlContent, idParent, version, testName);
                     // Track clicks on the specified element
                     trackClicks(idClick, version, testName);
                 });

@@ -71,4 +71,20 @@ router.post('/tests/:testId/update', isAuthenticated, async (req, res) => {
   }
 });
 
+// Fetching results for an A/B test and displaying them on a separate page
+router.get('/tests/:testId/results', isAuthenticated, async (req, res) => {
+  try {
+    const test = await AbTest.findById(req.params.testId);
+    if (!test) {
+      console.log(`A/B Test not found with ID: ${req.params.testId}`);
+      return res.status(404).send('A/B Test not found');
+    }
+    console.log(`Rendering results for A/B Test: ${test.testName}`);
+    res.render('testResults', { testName: test.testName, clicksA: test.clicksA, clicksB: test.clicksB, impressionsA: test.impressionsA, impressionsB: test.impressionsB });
+  } catch (error) {
+    console.error(`Error rendering results for A/B Test: ${error.message}`, error.stack);
+    res.status(500).send('Internal server error while rendering A/B test results.');
+  }
+});
+
 module.exports = router;

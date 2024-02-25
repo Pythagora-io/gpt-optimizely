@@ -141,4 +141,33 @@ router.post('/api/tests/track', trackApiLimiter, async (req, res) => {
   }
 });
 
+// Add a new route for tracking impressions
+router.post('/api/tests/impression', trackApiLimiter, async (req, res) => {
+  const { apiKey, version, testName, pagePath } = req.body;
+
+  try {
+    const user = await User.findOne({ apiKey });
+    if (!user) {
+      console.error(`Invalid API key: ${apiKey}`);
+      return res.status(404).send('Invalid API key.');
+    }
+
+    const filter = { createdBy: user._id, testName: testName, pagePaths: pagePath, testStatus: 'Running' };
+    const update = version === 'A' ? { $inc: { impressionsA: 1 } } : { $inc: { impressionsB: 1 } };
+
+    const test = await AbTest.findOneAndUpdate(filter, update, { new: true });
+
+    if (!test) {
+      console.error('A/B Test not found or not running on specified path for impression tracking.');
+      return res.status(404).send('A/B Test not found or not running on specified path for impression tracking.');
+    }
+
+    console.log(`Impression for ${testName} tracked successfully.`);
+    res.status(200).send('Impression tracked successfully.');
+  } catch (error) {
+    console.error('Error tracking A/B test impression:', error.message, error.stack);
+    res.status(500).send('Error tracking A/B test impression.');
+  }
+});
+
 module.exports = router;

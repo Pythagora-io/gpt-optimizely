@@ -10,7 +10,9 @@ const abTestSchema = new mongoose.Schema({
   htmlContentB: { type: String, required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   clicksA: { type: Number, default: 0 },
-  clicksB: { type: Number, default: 0 }
+  clicksB: { type: Number, default: 0 },
+  impressionsA: { type: Number, default: 0 },
+  impressionsB: { type: Number, default: 0 }
 }, { timestamps: true });
 
 abTestSchema.pre('save', function(next) {
