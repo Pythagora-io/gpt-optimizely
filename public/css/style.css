@@ -1,16 +1,19 @@
 /* Placeholder for custom styles */
 
+html {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+}
+.container {
+  flex: 1;
+}
 .footer {
   background: #f8f9fa;
   padding: 1rem 0;
-  margin-top: 2rem;
-}
-
-html, body {
-  height: 100%;
-  margin: 0;
-}
-
-.container {
-  min-height: calc(100% - 60px); /* Adjust 60px based on the actual height of your footer */
+  margin-top: auto;
 }
