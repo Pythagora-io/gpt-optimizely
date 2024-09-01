@@ -14,6 +14,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const { redirectToLoginIfNotAuthenticated } = require('./routes/middleware/authMiddleware');
+const serverless = require('serverless-http');
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET || !process.env.SERVER_URL) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
@@ -27,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(cors({
-  origin: 'http://localhost:8081',
+  origin: process.env.SERVER_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token'],
   credentials: true,
@@ -162,6 +163,9 @@ app.use((err, req, res, next) => {
   res.status(500).send("There was an error serving your request.");
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server running at http://localhost:${port}`);
+// });
+
+module.exports.handler = serverless(app);
+

@@ -1,0 +1,20 @@
+name: gpt-optimizely
+# The region where the application will be deployed. Available regions: us-east-1, eu-central-1
+region: us-east-1
+yamlVersion: 2
+backend:
+  # The root directory of the backend.
+  path: ./
+  language:
+    name: js
+    packageManager: npm
+  scripts:
+    deploy:
+      - npm install
+  functions:
+    - name: gpt-optimizely-function
+      path: ./
+      type: aws
+      handler: handler
+      entry: server.js
+  cloudProvider: genezio-cloud
