@@ -16,5 +16,5 @@ backend:
       path: ./
       type: aws
       handler: handler
-      entry: server.js
+      entry: index.js
   cloudProvider: genezio-cloud
