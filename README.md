@@ -31,4 +31,6 @@ The application leverages Node.js, Express.js, and MongoDB to deliver a robust b
 
 ### License
 
-Copyright (c) 2024.
+The project is open source, licensed under the MIT License. See the [LICENSE](LICENSE).
+
+Copyright © 2024 Pythagora-io.
