@@ -4,12 +4,38 @@
 <body>
 <%- include('partials/_header.ejs') %>
 <main role="main" class="container mt-4">
-    <h2>Your Account</h2>
+    <h2>Your Account: <%= user.email %></h2>
     <div class="my-4">
         <h4>API Key</h4>
         <pre><code><%= user.apiKey %></code></pre>
         <h4>HTML Snippet</h4>
-        <pre><code>&lt;script src="<%= process.env.LOADER_JS_PATH %>" data-api-key="<%= user.apiKey %>"&gt;&lt;/script&gt;</code></pre>
+        <pre><code>&lt;script src="<%= `${req.protocol}://${req.get('host')}/loader.js` %>" data-api-key="<%= user.apiKey %>"&gt;&lt;/script&gt;</code></pre>
+    </div>
+    <div class="allowed-origins mt-4">
+        <h4>Allowed Origins</h4>
+        <form action="/account/update-origins" method="POST">
+            <div class="mb-3">
+                <label for="origin" class="form-label">Add Origin</label>
+                <input type="text" class="form-control" id="origin" name="origin" placeholder="https://example.com">
+            </div>
+            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-primary">Add Origin</button>
+        </form>
+        <h5 class="mt-4">Your Origins</h5>
+        <ul class="list-group">
+            <% user.allowedOrigins.forEach(function(origin) { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <%= origin %>
+                    <form action="/account/update-origins" method="POST" class="d-inline">
+                        <input type="hidden" name="origin" value="<%= origin %>">
+                        <input type="hidden" name="action" value="remove">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                    </form>
+                </li>
+            <% }); %>
+        </ul>
     </div>
 </main>
 </body>

@@ -30,8 +30,8 @@ router.post('/tests/:testId/toggle-status', isAuthenticated, async (req, res) =>
   try {
     const test = await AbTest.findById(req.params.testId);
     if (!test) {
-      console.log('Test not found with id:', req.params.testId);
-      return res.status(404).json({ success: false, message: 'Test not found.' });
+      console.error('Test not found with id:', req.params.testId);
+      return res.status(404).json({ success: false, message: 'Test not found' });
     }
     test.testStatus = test.testStatus === 'Running' ? 'Stopped' : 'Running';
     await test.save();
@@ -39,7 +39,7 @@ router.post('/tests/:testId/toggle-status', isAuthenticated, async (req, res) =>
     res.json({ success: true, testStatus: test.testStatus });
   } catch (error) {
     console.error('Error toggling test status:', error.message, error.stack);
-    res.status(500).json({ success: false, message: 'Error toggling test status.' });
+    res.status(500).json({ success: false, message: 'Error toggling test status' });
   }
 });
 

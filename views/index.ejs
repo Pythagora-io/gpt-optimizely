@@ -2,13 +2,55 @@
 <html lang="en">
 <%- include('partials/_head.ejs') %>
   <body>
-<%- include('partials/_header.ejs') %>
+    <%- include('partials/_header.ejs') %>
     <main role="main" class="container mt-4">
-      <div class="text-center">
-        <h1>GPTOptimizely</h1>
+      <h1 class="text-center mb-4 fade-in">Welcome to GPTOptimizely</h1>
+      <div class="tooltip-slider">
+        <% tooltips.forEach(function(tip, index) { %>
+          <div class="tooltip-slide">
+            <div class="tooltip-content">
+              <h3><%= tip.title %></h3>
+              <p><%= tip.description %></p>
+            </div>
+          </div>
+        <% }); %>
       </div>
+      <div class="slider-controls">
+        <button id="prevTip" class="btn btn-outline-primary">&lt; Previous</button>
+        <button id="nextTip" class="btn btn-outline-primary">Next &gt;</button>
+      </div>
+      <% if (userTests && userTests.length > 0) { %>
+        <h2 class="mt-4">Your A/B Tests</h2>
+        <div class="row">
+          <% userTests.forEach(function(test) { %>
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title"><%= test.testName %></h5>
+                  <p class="card-text">Status: <%= test.testStatus %></p>
+                  <a href="/tests/<%= test._id %>/edit" class="btn btn-primary btn-sm">Edit</a>
+                  <a href="#" class="btn btn-sm toggle-test-status <%= test.testStatus === 'Running' ? 'btn-danger' : 'btn-success' %>" data-testid="<%= test._id %>" data-status="<%= test.testStatus %>">
+                    <%= test.testStatus === 'Running' ? 'Stop' : 'Start' %>
+                  </a>
+                  <a href="/tests/<%= test._id %>/results" class="btn btn-info btn-sm">View Results</a>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="text-center">
+          <a href="/tests/management" class="btn btn-primary btn-lg mt-3 pulse" data-toggle="tooltip" title="View your A/B tests">Get Started</a>
+        </div>
+      <% } %>
+      <% if (locals.user) { %>
+        <input type="hidden" id="csrfToken" value="<%= csrfToken %>">
+      <% } %>
     </main>
+    <%- include('partials/_footer.ejs') %>
+    <script src="/js/main.js"></script>
+    <script src="/js/animations.js"></script>
+    <script src="/js/tooltipSlider.js"></script>
+    <script src="/js/abTests.js"></script>
   </body>
-<%- include('partials/_footer.ejs') %>
-  <script src="/js/main.js"></script>
 </html>

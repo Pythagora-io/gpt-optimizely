@@ -19,7 +19,7 @@ router.get('/api/generate-snippet', async (req, res) => {
       return res.status(404).send('Invalid API key.');
     }
 
-    const snippet = `<script src="${process.env.LOADER_JS_PATH}" data-api-key="${apiKey}"></script>`;
+    const snippet = `<script src="https://${req.get('host')}/loader.js" data-api-key="${apiKey}"></script>`;
     console.log(`Snippet generated for API key: ${apiKey}`);
     res.type('text/plain').send(snippet);
   } catch (error) {

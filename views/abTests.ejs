@@ -4,20 +4,17 @@
 <body>
 <%- include('partials/_header.ejs') %>
 <main role="main" class="container mt-4">
-    <h2>A/B Tests Management</h2>
-    <a class="btn btn-primary my-3" href="/tests/new">Create New Test</a>
+    <h2 class="fade-in">A/B Tests Management</h2>
+    <a class="btn btn-primary my-3 slide-in" href="/tests/new" data-toggle="tooltip" title="Create a new A/B test">Create New Test</a>
     <div id="testsList">
-        <% tests.forEach(function(test) { %>
-            <div class="card my-2">
+        <% tests.forEach(function(test, index) { %>
+            <div class="card my-2 slide-in" style="animation-delay: <%= index * 0.1 %>s;">
                 <div class="card-body">
                     <h5 class="card-title"><%= test.testName %></h5>
                     <p class="card-text">Status: <%= test.testStatus %></p>
-                    <a href="/tests/<%= test._id %>/edit" class="btn btn-secondary">Edit</a>
-                    <a href="#" class="btn <%= test.testStatus === 'Running' ? 'btn-danger' : 'btn-success' %> toggle-test-status" data-testid="<%= test._id %>" data-status="<%= test.testStatus %>"><%= test.testStatus === 'Running' ? 'Stop' : 'Start' %></a>
-                    <button class="btn btn-info view-results" data-testid="<%= test._id %>">View Results</button>
-                    <div class="chart-container" style="position: relative; height:40vh; width:80vw; display:none;" id="container-<%= test._id %>">
-                        <canvas id="chart-<%= test._id %>"></canvas>
-                    </div>
+                    <a href="/tests/<%= test._id %>/edit" class="btn btn-secondary" data-toggle="tooltip" title="Edit this test">Edit</a>
+                    <a href="#" class="btn <%= test.testStatus === 'Running' ? 'btn-danger' : 'btn-success' %> toggle-test-status" data-testid="<%= test._id %>" data-status="<%= test.testStatus %>" data-toggle="tooltip" title="<%= test.testStatus === 'Running' ? 'Stop this test' : 'Start this test' %>"><%= test.testStatus === 'Running' ? 'Stop' : 'Start' %></a>
+                    <button class="btn btn-info view-results" data-testid="<%= test._id %>" data-toggle="tooltip" title="View test results">View Results</button>
                 </div>
             </div>
         <% }); %>
@@ -26,6 +23,7 @@
 </main>
 <script src="/js/abTests.js"></script>
 <script src="/js/resultsChart.js"></script>
+<script src="/js/animations.js"></script>
 </body>
 <%- include('partials/_footer.ejs') %>
 </html>

@@ -3,9 +3,9 @@
 <%- include('partials/_head.ejs') %>
 <body>
 <%- include('partials/_header.ejs') %>
-<main role="main" class="container mt-4 mb-5">
-    <h2>Edit A/B Test</h2>
-    <form action="/tests/<%= test._id %>/update" method="POST">
+<main role="main" class="container mt-4 mb-5 fade-in">
+    <h2 class="slide-in" style="animation-delay: 0.1s;">Edit A/B Test</h2>
+    <form action="/tests/<%= test._id %>/update" method="POST" class="slide-in" style="animation-delay: 0.2s;">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input type="hidden" name="testStatus" value="<%= test.testStatus %>">
         <div class="mb-3">
@@ -19,7 +19,7 @@
                     <input type="text" class="form-control mb-2" name="pagePaths[]" value="<%= path %>" required>
                 <% }); %>
             </div>
-            <button type="button" class="btn btn-secondary" id="addPagePath">Add Another Page Path</button>
+            <button type="button" class="btn btn-secondary pulse" id="addPagePath">Add Another Page Path</button>
         </div>
         <div class="mb-3">
             <label for="IDparent" class="form-label">ID field for the parent element</label>
@@ -39,9 +39,10 @@
                 <textarea class="form-control" id="htmlContentB" name="htmlContentB" rows="3" required><%= test.htmlContentB %></textarea>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Update Test</button>
+        <button type="submit" class="btn btn-primary pulse">Update Test</button>
     </form>
 </main>
+<script src="/js/animations.js"></script>
 <script>
     document.getElementById('addPagePath').addEventListener('click', function() {
         const newInput = document.createElement('input');

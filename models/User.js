@@ -3,9 +3,10 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, unique: true, required: true },
+  email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
-  apiKey: { type: String, unique: true }
+  apiKey: { type: String, unique: true },
+  allowedOrigins: [{ type: String }]
 });
 
 // Pre-save middleware for generating the API key and hashing the password
@@ -16,7 +17,7 @@ userSchema.pre('save', async function(next) {
   if (user.isNew) {
     try {
       user.apiKey = uuidv4(); // Generate a unique API key
-      console.log(`API Key generated for user: ${user.username}`);
+      console.log(`API Key generated for user: ${user.email}`);
     } catch (err) {
       console.error('Error generating API key:', err.message, err.stack);
       return next(err);
@@ -28,7 +29,7 @@ userSchema.pre('save', async function(next) {
     try {
       const hash = await bcrypt.hash(user.password, 10);
       user.password = hash;
-      console.log(`Password hashed for user: ${user.username}`);
+      console.log(`Password hashed for user: ${user.email}`);
     } catch (err) {
       console.error('Error hashing password:', err.message, err.stack);
       return next(err);

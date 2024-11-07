@@ -4,12 +4,16 @@
 <body>
 <%- include('partials/_header.ejs') %>
 <main role="main" class="container mt-4 mb-5">
-    <h2>Test Results: <%= testName %></h2>
+    <h2 class="fade-in">Test Results: <%= testName %></h2>
     <div class="my-4">
         <canvas id="resultsChart"></canvas>
     </div>
+    <div class="tooltip">Hover over me
+        <span class="tooltiptext">Test results visualization</span>
+    </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/js/animations.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('resultsChart').getContext('2d');

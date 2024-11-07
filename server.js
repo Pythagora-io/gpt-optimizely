@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const { redirectToLoginIfNotAuthenticated } = require('./routes/middleware/authMiddleware');
 
-if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET || !process.env.SERVER_URL) {
+if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
   process.exit(-1);
 }
@@ -26,19 +26,43 @@ const port = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use(cors({
-  origin: 'http://localhost:8081',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'CSRF-Token'],
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
+const corsOptionsDelegate = async function (req, callback) {
+  let corsOptions;
+  if (req.path === '/api/tests/config' || req.path === '/api/tests/impression' || req.path === '/api/tests/track') {
+    const apiKey = req.method === 'OPTIONS' ? req.headers['access-control-request-headers'].split(',').find(header => header.trim().toLowerCase() === 'x-api-key') : (req.query.apiKey || (req.body && req.body.apiKey));
+    try {
+      if (req.method === 'OPTIONS') {
+        corsOptions = {
+          origin: true,
+          credentials: true,
+          methods: ['POST', 'GET', 'OPTIONS'],
+          allowedHeaders: ['Content-Type', 'x-api-key', 'authorization']  // Add 'authorization' here
+        };
+      } else {
+        const user = await User.findOne({ apiKey });
+        if (user && user.allowedOrigins.includes(req.header('Origin'))) {
+          corsOptions = { origin: true, credentials: true };
+        } else {
+          corsOptions = { origin: false };
+        }
+      }
+    } catch (err) {
+      console.error(`Error during CORS configuration: ${err}`);
+      corsOptions = { origin: false };
+    }
+  } else {
+    corsOptions = { origin: false };
+  }
+  callback(null, corsOptions);
+};
+
+app.use(cors(corsOptionsDelegate));
 
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", process.env.SERVER_URL, 'https://cdn.jsdelivr.net'],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.jsdelivr.net'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https:'],
       imgSrc: ["'self'", 'data:', 'https:'],
       connectSrc: ["'self'", 'wss:', 'https:', 'http:'],
@@ -66,7 +90,7 @@ app.get('/loader.js', (req, res) => {
       console.error('Error reading loader.js file:', err);
       return res.status(500).send('Error serving loader script.');
     }
-    const updatedData = data.replace('%%SERVER_URL%%', process.env.SERVER_URL);
+    const updatedData = data.replace('%%SERVER_URL%%', `https://${req.get('host')}`);
     res.type('application/javascript').send(updatedData);
   });
 });

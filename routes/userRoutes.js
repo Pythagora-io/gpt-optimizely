@@ -12,9 +12,32 @@ router.get('/account', redirectToLoginIfNotAuthenticated, async (req, res) => {
             return res.status(404).send('User not found');
         }
         console.log(`Rendering account page for user: ${user.username}`);
-        res.render('account', { user });
+        console.log(`Current allowed origins: ${user.allowedOrigins}`);
+        res.render('account', { user, req });
     } catch (error) {
         console.error(`Error fetching user details: ${error.message}`, error.stack);
+        res.status(500).send('Internal server error');
+    }
+});
+
+router.post('/account/update-origins', redirectToLoginIfNotAuthenticated, async (req, res) => {
+    try {
+        const { action, origin } = req.body;
+        const user = await User.findById(req.session.userId);
+
+        if (action === 'add') {
+            user.allowedOrigins.push(origin);
+            console.log(`Added new origin ${origin} for user ${user.username}`);
+        } else if (action === 'remove') {
+            user.allowedOrigins = user.allowedOrigins.filter(o => o !== origin);
+            console.log(`Removed origin ${origin} for user ${user.username}`);
+        }
+
+        await user.save();
+        console.log(`Updated allowed origins for user ${user.username}: ${user.allowedOrigins}`);
+        res.redirect('/account');
+    } catch (error) {
+        console.error(`Error updating allowed origins: ${error.message}`, error.stack);
         res.status(500).send('Internal server error');
     }
 });
@@ -70,6 +93,27 @@ router.post('/tests/:testId/toggle-status', isAuthenticated, async (req, res) =>
         console.error(`Error toggling test status: ${error.message}`, error.stack);
         res.status(500).send('Error toggling test status.');
     }
+});
+
+router.get('/', async (req, res) => {
+  const tooltips = [
+    { title: "Built with Pythagora", description: "Optimize your website with powerful A/B testing" },
+    { title: "Create A/B Tests", description: "Easily set up tests to compare different versions of your web pages" },
+    { title: "Track Results", description: "Monitor the performance of your tests in real-time" },
+    { title: "Make Data-Driven Decisions", description: "Use insights from your tests to improve your website" }
+  ];
+
+  let userTests = [];
+  if (req.session.userId) {
+    userTests = await AbTest.find({ createdBy: req.session.userId });
+  }
+
+  res.render('index', {
+    tooltips,
+    userTests,
+    user: req.session.userId ? { id: req.session.userId } : null,
+    csrfToken: req.csrfToken()
+  });
 });
 
 module.exports = router;

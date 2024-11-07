@@ -1,0 +1,37 @@
+.tooltip-slider {
+  position: relative;
+  overflow: hidden;
+  height: 120px; /* Changed from 150px to 120px */
+  margin-bottom: 5px; /* Further reduce from 10px */
+}
+
+.tooltip-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.tooltip-slide.active {
+  opacity: 1;
+}
+
+.tooltip-content {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 15px;
+  text-align: center;
+}
+
+.slider-controls {
+  text-align: center;
+  margin-bottom: 5px; /* Further reduce from 10px */
+}
+
+.slider-controls button {
+  margin: 0 5px;
+}

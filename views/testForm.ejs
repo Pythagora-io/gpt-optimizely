@@ -4,8 +4,8 @@
 <body>
 <%- include('partials/_header.ejs') %>
 <main role="main" class="container mt-4 mb-5">
-    <h2>Create New A/B Test</h2>
-    <form action="/tests/create" method="POST">
+    <h2 class="fade-in">Create New A/B Test</h2>
+    <form action="/tests/create" method="POST" class="slide-in">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="mb-3">
             <label for="testName" class="form-label">Test Name</label>
@@ -16,7 +16,7 @@
             <div id="pagePaths">
                 <input type="text" class="form-control mb-2" name="pagePaths[]" required>
             </div>
-            <button type="button" class="btn btn-secondary" id="addPagePath">Add Another Page Path</button>
+            <button type="button" class="btn btn-secondary pulse" id="addPagePath">Add Another Page Path</button>
         </div>
         <div class="mb-3">
             <label for="IDparent" class="form-label">ID field for the parent element</label>
@@ -36,9 +36,10 @@
                 <textarea class="form-control" id="htmlContentB" name="htmlContentB" rows="3" required></textarea>
             </div>
         </div>
-        <button type="submit" class="btn btn-primary">Save Test</button>
+        <button type="submit" class="btn btn-primary pulse">Save Test</button>
     </form>
 </main>
+<script src="/js/animations.js"></script>
 <script>
     document.getElementById('addPagePath').addEventListener('click', function() {
         const newInput = document.createElement('input');
